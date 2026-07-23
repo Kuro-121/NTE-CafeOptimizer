@@ -143,6 +143,14 @@ const MASTER_DATA = {
         { "level": 2, "val": 0.3, "req": 3, "type": "Price_Flat", "tag": "Beverages" },
         { "level": 5, "val": 0.03, "req": 3, "type": "Price_Multiply", "tag": "Beverages" }
       ]
+    },
+    {
+      "name": "Iroi",
+      "skills": [
+        { "level": 1, "val": 18, "req": 0, "type": "Traffic_Flat", "tag": "None" },
+        { "level": 3, "val": 18, "req": 0, "type": "Traffic_Flat", "tag": "None" },
+        { "level": 5, "val": 27, "req": 0, "type": "Traffic_Flat", "tag": "None" }
+      ]
     }
   ]
 }
