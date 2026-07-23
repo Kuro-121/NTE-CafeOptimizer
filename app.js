@@ -8,7 +8,7 @@ let masterData = { ingredients: [], dishes: [], characters: [] };
 // User state: { dishes: { [name]: { owned, level } }, characters: { [name]: { owned, level } } }
 let userState = { dishes: {}, characters: {} };
 
-let settings = { cafesOwned: 5, trendCategory: '', trendBonus: 1.0, popularityBonus: 0 };
+let settings = { cafesOwned: 5, trendCategory: '', trendBonus: 1.0, popularityBonus: 0, hotoriCatDecor: false};
 
 // ── LOAD ───────────────────────────────────────────────────────────────────
 function init() {
@@ -74,6 +74,7 @@ function saveSettings() {
   settings.trendCategory  = document.getElementById('trendCategory').value;
   settings.trendBonus     = parseFloat(document.getElementById('trendBonus').value) || 0;
   settings.popularityBonus = parseFloat(document.getElementById('popularityBonus').value) || 0;
+  settings.hotoriCatDecor = document.getElementById('hotoriCatDecor').checked;
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
@@ -82,6 +83,7 @@ function applySettings() {
   document.getElementById('trendCategory').value  = settings.trendCategory;
   document.getElementById('trendBonus').value     = settings.trendBonus;
   document.getElementById('popularityBonus').value = settings.popularityBonus;
+  document.getElementById('hotoriCatDecor').checked = !!settings.hotoriCatDecor;
 }
 
 // ── TABS ───────────────────────────────────────────────────────────────────
@@ -300,7 +302,7 @@ function updateRosterSummary() {
     Char combos: <span>${nCr(ownedChars, Math.min(ownedChars, maxC))}</span>
   `;
 }
-['cafesOwned', 'trendCategory', 'trendBonus', 'popularityBonus'].forEach(id => {
+['cafesOwned', 'trendCategory', 'trendBonus', 'popularityBonus', 'hotoriCatDecor'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => { saveSettings(); updateRosterSummary(); });
   document.getElementById(id).addEventListener('change', () => { saveSettings(); updateRosterSummary(); });
 });
@@ -418,16 +420,27 @@ function runOptimizer() {
       });
 
       // Pass 2: Traffic_Multiply (against post-flat traffic)
+      let tt = 0, activated = false;
       testTeam.forEach(c => {
-        let tt = 0, activated = false;
+        bonusTraffic = 0;
         c.skills.forEach(skill => {
           if (skill.type !== 'Traffic_Multiply') return;
           if (!skillActivates(skill)) return;
           activated = true;
-          tt += currentTraffic * skill.val;
+          bonusTraffic += currentTraffic * skill.val;
         });
-        if (activated) { currentTraffic += tt; appendLog(c.name, tt, 0, 0); }
+        tt += bonusTraffic;
+        appendLog(c.name, bonusTraffic, 0, 0);
       });
+      // Hotori Cat Decor: +1% traffic
+      if (settings.hotoriCatDecor) {
+        hotoriCatDecorTrafficMultiply = 0.01;
+        activated = true;
+        bonusTraffic = currentTraffic * hotoriCatDecorTrafficMultiply;
+        tt += bonusTraffic;
+        appendLog('Hotori Cat Decor', bonusTraffic, 0, 0);
+      }
+      if (activated) { currentTraffic += tt; }
 
       // Pass 3: Price_Multiply (multiplies final dish price)
       testTeam.forEach(c => {
