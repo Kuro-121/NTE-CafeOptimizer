@@ -9,10 +9,12 @@ let masterData = { ingredients: [], dishes: [], characters: [] };
 let userState = { dishes: {}, characters: {} };
 
 let settings = { cafesOwned: 5, trendCategory: '', trendBonus: 1.0, popularityBonus: 0, hotoriCatDecor: false};
+let lastView = null;
 
 // ── LOAD ───────────────────────────────────────────────────────────────────
 function init() {
   masterData = MASTER_DATA;
+  I18N.apply();
   loadSettings();
   loadUserState();
   seedUserState();
@@ -99,29 +101,30 @@ document.querySelectorAll('.tab').forEach(tab => {
 // ── TREND DROPDOWN ─────────────────────────────────────────────────────────
 function populateTrendDropdown() {
   const sel = document.getElementById('trendCategory');
+  sel.innerHTML = `<option value="">${I18N.t('settings.none')}</option>`;
 
   // Collect options: dish types + ingredient names + ingredient categories (like 'Fruit')
   const dishTypes = [...new Set(masterData.dishes.map(d => d.type))].sort();
   const ingNames  = masterData.ingredients.map(i => i.name).sort();
   const ingCats   = [...new Set(masterData.ingredients.map(i => i.category).filter(Boolean))].sort();
 
-  const addGroup = (label, items) => {
+  const addGroup = (type, items) => {
     if (!items.length) return;
     const grp = document.createElement('optgroup');
-    grp.label = label;
+    grp.label = I18N.t(`trend.${type}`);
     items.forEach(item => {
       const opt = document.createElement('option');
       opt.value = item;
-      opt.textContent = item;
+      opt.textContent = I18N.data(type, item);
       if (item === settings.trendCategory) opt.selected = true;
       grp.appendChild(opt);
     });
     sel.appendChild(grp);
   };
 
-  addGroup('Dish Types', dishTypes);
-  addGroup('Categories', ingCats);
-  addGroup('Ingredients', ingNames);
+  addGroup('dishTypes', dishTypes);
+  addGroup('ingredientCategories', ingCats);
+  addGroup('ingredients', ingNames);
 }
 
 // ── DISHES ─────────────────────────────────────────────────────────────────
@@ -143,9 +146,9 @@ function renderDishes() {
           <option value="2" ${us.level == 2 ? 'selected' : ''}>L2</option>
         </select>
       </td>
-      <td class="name-col">${d.name}</td>
-      <td class="type-col">${d.type}</td>
-      <td style="font-size:0.75rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text3)">${d.ingredients}</td>
+      <td class="name-col">${I18N.data('dishes', d.name)}</td>
+      <td class="type-col">${I18N.data('dishTypes', d.type)}</td>
+      <td style="font-size:0.75rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text3)">${I18N.list('ingredients', d.ingredients)}</td>
       <td>${d.priceL1}</td>
       <td>${d.priceL2}</td>
     `;
@@ -171,7 +174,7 @@ function renderDishes() {
   // ── Bulk toggle: Own All / Unown All
   const btnOwned = document.getElementById('btnToggleAllOwned');
   const allOwned = masterData.dishes.every(d => userState.dishes[d.name]?.owned);
-  btnOwned.textContent = allOwned ? 'Unown All' : 'Own All';
+  btnOwned.textContent = I18N.t(allOwned ? 'dishes.unownAll' : 'dishes.ownAll');
   btnOwned.classList.toggle('active', allOwned);
   btnOwned.onclick = () => {
     const nowAllOwned = masterData.dishes.every(d => userState.dishes[d.name]?.owned);
@@ -185,7 +188,7 @@ function renderDishes() {
   // ── Bulk toggle: Set All L2 / Set All L1
   const btnLevel = document.getElementById('btnToggleAllLevel');
   const allL2 = masterData.dishes.every(d => userState.dishes[d.name]?.level === 2);
-  btnLevel.textContent = allL2 ? 'Set All L1' : 'Set All L2';
+  btnLevel.textContent = I18N.t(allL2 ? 'dishes.setAllL1' : 'dishes.setAllL2');
   btnLevel.classList.toggle('active', allL2);
   btnLevel.onclick = () => {
     const nowAllL2 = masterData.dishes.every(d => userState.dishes[d.name]?.level === 2);
@@ -215,33 +218,33 @@ function renderCharacters() {
       <div class="skill-item">
         <span class="skill-lvl">L${s.level}</span>
         <span class="skill-val">${s.val > 0 && s.type.includes('Traffic') ? '+'+s.val : s.val > 0 && s.val < 1 ? '+'+s.val.toFixed(3) : s.val}</span>
-        <span class="skill-type">${s.type}</span>
-        ${s.tag !== 'None' ? `<span class="skill-tag">/ ${s.tag}</span>` : ''}
-        ${s.req > 0 ? `<span class="skill-req">(req ${s.req})</span>` : ''}
+        <span class="skill-type">${I18N.data('skillTypes', s.type)}</span>
+        ${s.tag !== 'None' ? `<span class="skill-tag">/ ${I18N.data(s.tag === 'Any' ? 'skillTags' : 'dishTypes', s.tag)}</span>` : ''}
+        ${s.req > 0 ? `<span class="skill-req">${I18N.t('characters.requirement', { count: s.req })}</span>` : ''}
       </div>
     `).join('');
 
     card.innerHTML = `
       <div class="char-card-header">
         <div class="char-card-left">
-          <span class="char-name">${c.name}</span>
-          <span class="char-owned-badge ${isOwned ? 'owned' : 'unowned'}">${isOwned ? 'Owned' : 'Not Owned'}</span>
+          <span class="char-name">${I18N.data('characters', c.name)}</span>
+          <span class="char-owned-badge ${isOwned ? 'owned' : 'unowned'}">${I18N.t(isOwned ? 'characters.owned' : 'characters.notOwned')}</span>
         </div>
         <span class="char-chevron">▼</span>
       </div>
       <div class="char-card-body">
         <div class="char-controls">
           <div class="char-control-item">
-            <label>Owned</label>
+            <label>${I18N.t('characters.owned')}</label>
             <input type="checkbox" data-char-owned="${c.name}" ${isOwned ? 'checked' : ''} />
           </div>
           <div class="char-control-item">
-            <label>Level</label>
+            <label>${I18N.t('characters.level')}</label>
             <input type="number" min="1" max="5" value="${us.level || 1}" data-char-lvl="${c.name}" />
           </div>
         </div>
         <div class="skills-section">
-          <div class="skills-title">Skills</div>
+          <div class="skills-title">${I18N.t('characters.skills')}</div>
           <div class="skill-list">${skillsHtml}</div>
         </div>
       </div>
@@ -267,11 +270,11 @@ function renderCharacters() {
       if (cb.checked) {
         card.classList.add('owned');
         badge.className = 'char-owned-badge owned';
-        badge.textContent = 'Owned';
+        badge.textContent = I18N.t('characters.owned');
       } else {
         card.classList.remove('owned');
         badge.className = 'char-owned-badge unowned';
-        badge.textContent = 'Not Owned';
+        badge.textContent = I18N.t('characters.notOwned');
       }
       saveUserState(); updateRosterSummary();
     });
@@ -296,10 +299,10 @@ function updateRosterSummary() {
   const ownedChars  = masterData.characters.filter(c => (userState.characters[c.name] || {}).owned).length;
 
   document.getElementById('rosterSummary').innerHTML = `
-    Dishes: <span>${ownedDishes}</span> owned / <span>${maxD}</span> slots<br>
-    Characters: <span>${ownedChars}</span> owned / <span>${maxC}</span> slots<br>
-    Dish combos: <span>${nCr(ownedDishes, Math.min(ownedDishes, maxD))}</span><br>
-    Char combos: <span>${nCr(ownedChars, Math.min(ownedChars, maxC))}</span>
+    ${I18N.t('summary.dishes', { owned: ownedDishes, slots: maxD })}<br>
+    ${I18N.t('summary.characters', { owned: ownedChars, slots: maxC })}<br>
+    ${I18N.t('summary.dishCombos', { count: nCr(ownedDishes, Math.min(ownedDishes, maxD)) })}<br>
+    ${I18N.t('summary.charCombos', { count: nCr(ownedChars, Math.min(ownedChars, maxC)) })}
   `;
 }
 ['cafesOwned', 'trendCategory', 'trendBonus', 'popularityBonus', 'hotoriCatDecor'].forEach(id => {
@@ -365,8 +368,11 @@ function runOptimizer() {
   });
 
   // Validation
-  if (ownedDishes.length === 0) { showError('No owned dishes. Go to the Dishes tab and mark some as owned.'); return; }
-  if (ownedDishes.length < maxDishes) { showError(`Need at least ${maxDishes} owned dishes for ${cafesOwned} cafe(s). You have ${ownedDishes.length}.`); return; }
+  if (ownedDishes.length === 0) { showError('error.noOwnedDishes'); return; }
+  if (ownedDishes.length < maxDishes) {
+    showError('error.notEnoughDishes', { needed: maxDishes, cafes: cafesOwned, owned: ownedDishes.length });
+    return;
+  }
 
   const dishCombos = getCombinations(ownedDishes, maxDishes);
   const charCombos = ownedChars.length > 0
@@ -397,13 +403,13 @@ function runOptimizer() {
       }
       function appendLog(name, traffic, price, multiplier) {
         const parts = [];
-        if (traffic > 0)    parts.push(`+${traffic.toFixed(2)} Traffic`);
-        if (price > 0)      parts.push(`+${price.toFixed(2)} Price`);
-        if (multiplier > 0) parts.push(`+${(multiplier*100).toFixed(1)}% Price`);
+        if (traffic > 0)    parts.push({ key: 'buff.traffic', value: traffic.toFixed(2) });
+        if (price > 0)      parts.push({ key: 'buff.price', value: price.toFixed(2) });
+        if (multiplier > 0) parts.push({ key: 'buff.pricePercent', value: (multiplier * 100).toFixed(1) });
         if (!parts.length) return;
         const idx = tempLog.findIndex(l => l.name === name);
-        if (idx >= 0) tempLog[idx].buffs += ' & ' + parts.join(' & ');
-        else tempLog.push({ name, buffs: parts.join(' & ') });
+        if (idx >= 0) tempLog[idx].buffs.push(...parts);
+        else tempLog.push({ name, buffs: parts });
       }
 
       // Pass 1: Flat skills
@@ -422,7 +428,7 @@ function runOptimizer() {
       // Pass 2: Traffic_Multiply (against post-flat traffic)
       let tt = 0, activated = false;
       testTeam.forEach(c => {
-        bonusTraffic = 0;
+        let bonusTraffic = 0;
         c.skills.forEach(skill => {
           if (skill.type !== 'Traffic_Multiply') return;
           if (!skillActivates(skill)) return;
@@ -434,9 +440,9 @@ function runOptimizer() {
       });
       // Hotori Cat Decor: +1% traffic
       if (settings.hotoriCatDecor) {
-        hotoriCatDecorTrafficMultiply = 0.01;
+        const hotoriCatDecorTrafficMultiply = 0.01;
         activated = true;
-        bonusTraffic = currentTraffic * hotoriCatDecorTrafficMultiply;
+        const bonusTraffic = currentTraffic * hotoriCatDecorTrafficMultiply;
         tt += bonusTraffic;
         appendLog('Hotori Cat Decor', bonusTraffic, 0, 0);
       }
@@ -469,7 +475,7 @@ function runOptimizer() {
     });
   });
 
-  if (!bestData) { showError('No valid roster found.'); return; }
+  if (!bestData) { showError('error.noRoster'); return; }
   showResults(bestData);
 }
 
@@ -484,48 +490,55 @@ function getCombinations(array, size) {
 }
 
 // ── RESULTS ────────────────────────────────────────────────────────────────
-function showError(msg) {
+function showError(key, variables = {}) {
+  lastView = { type: 'error', key, variables };
   document.getElementById('resultsArea').innerHTML = `
     <div class="results-placeholder">
       <div class="placeholder-icon">⚠️</div>
-      <p style="color:var(--red)">${msg}</p>
+      <p style="color:var(--red)">${I18N.t(key, variables)}</p>
     </div>`;
 }
 
 function showResults(data) {
+  lastView = { type: 'results', data };
   const { trendCategory, trendBonus } = settings;
   const trafficRatio = data.traffic / 100;
 
+  const trendType = masterData.dishes.some(d => d.type === trendCategory)
+    ? 'dishTypes'
+    : masterData.ingredients.some(i => i.category === trendCategory)
+      ? 'ingredientCategories'
+      : 'ingredients';
   const trendHtml = trendCategory
-    ? `<div style="font-family:var(--mono);font-size:0.78rem;color:var(--accent);margin-bottom:0.5rem">🔥 Trend: ${trendCategory} (+${trendBonus.toFixed(2)} Fons)</div>`
+    ? `<div style="font-family:var(--mono);font-size:0.78rem;color:var(--accent);margin-bottom:0.5rem">🔥 ${I18N.t('results.trend', { category: I18N.data(trendType, trendCategory), bonus: trendBonus.toFixed(2) })}</div>`
     : '';
 
   const statsHtml = `
     <div class="result-stat-row">
       <div class="result-stat">
-        <div class="result-stat-label">Traffic</div>
+        <div class="result-stat-label">${I18N.t('results.traffic')}</div>
         <div class="result-stat-value">${data.traffic.toFixed(2)}</div>
       </div>
       <div class="result-stat">
-        <div class="result-stat-label">Price Buff</div>
+        <div class="result-stat-label">${I18N.t('results.priceBuff')}</div>
         <div class="result-stat-value">+${data.priceBuff.toFixed(2)}</div>
       </div>
       <div class="result-stat">
-        <div class="result-stat-label">Price Mult</div>
+        <div class="result-stat-label">${I18N.t('results.priceMultiplier')}</div>
         <div class="result-stat-value">×${data.priceMultiplier.toFixed(3)}</div>
       </div>
       <div class="result-stat" style="border-color:var(--accent);background:rgba(245,166,35,0.06)">
-        <div class="result-stat-label">Total Income (Displayed In-game)</div>
-        <div class="result-stat-value">${data.income.toFixed(2)} <span style="font-size:0.7rem;color:var(--text3)">Fons/hr</span></div>
+        <div class="result-stat-label">${I18N.t('results.displayedIncome')}</div>
+        <div class="result-stat-value">${data.income.toFixed(2)} <span style="font-size:0.7rem;color:var(--text3)">${I18N.t('unit.fonsPerHour')}</span></div>
       </div>
       <div class="result-stat" style="border-color:var(--accent);background:rgba(245,166,35,0.06)">
-        <div class="result-stat-label">Total Income (Actual)</div>
-        <div class="result-stat-value">${(data.income * (1 + settings.popularityBonus)).toFixed(2)} <span style="font-size:0.7rem;color:var(--text3)">Fons/hr</span></div>
+        <div class="result-stat-label">${I18N.t('results.actualIncome')}</div>
+        <div class="result-stat-value">${(data.income * (1 + settings.popularityBonus)).toFixed(2)} <span style="font-size:0.7rem;color:var(--text3)">${I18N.t('unit.fonsPerHour')}</span></div>
       </div>
     </div>`;
 
   const dishesHtml = `
-    <div class="result-section-title">🍽️ Best Menu</div>
+    <div class="result-section-title">🍽️ ${I18N.t('results.bestMenu')}</div>
     <div class="result-menu">
       ${data.dishes.map(d => {
         const finalPrice = (d.basePrice + data.priceBuff) * data.priceMultiplier;
@@ -533,24 +546,24 @@ function showResults(data) {
           <div class="result-dish">
             <div class="result-dish-name">
               ${d.isTrending ? '<span class="trend-badge">🔥</span>' : ''}
-              ${d.name}
-              <span style="font-size:0.7rem;color:var(--text3);font-family:var(--mono)">${d.type}</span>
+              ${I18N.data('dishes', d.name)}
+              <span style="font-size:0.7rem;color:var(--text3);font-family:var(--mono)">${I18N.data('dishTypes', d.type)}</span>
             </div>
             <div style="display:flex;gap:1rem;font-family:var(--mono);font-size:0.8rem">
               <span class="result-dish-price">${finalPrice.toFixed(2)} Fons</span>
-              <span class="result-dish-income">${(finalPrice * trafficRatio).toFixed(2)}/hr</span>
+              <span class="result-dish-income">${(finalPrice * trafficRatio).toFixed(2)}${I18N.t('unit.perHour')}</span>
             </div>
           </div>`;
       }).join('')}
     </div>`;
 
   const logHtml = data.log.length > 0 ? `
-    <div class="result-section-title" style="margin-top:1rem">👥 Character Buffs</div>
+    <div class="result-section-title" style="margin-top:1rem">👥 ${I18N.t('results.characterBuffs')}</div>
     <div class="result-log">
       ${data.log.map(e => `
         <div class="log-entry">
-          <span class="log-name">${e.name}</span>
-          <span class="log-buffs">${e.buffs}</span>
+          <span class="log-name">${I18N.data(e.name === 'Hotori Cat Decor' ? 'decorations' : 'characters', e.name)}</span>
+          <span class="log-buffs">${e.buffs.map(buff => I18N.t(buff.key, { value: buff.value })).join(I18N.t('common.and'))}</span>
         </div>`).join('')}
     </div>` : '';
 
@@ -559,4 +572,17 @@ function showResults(data) {
 }
 
 // ── START ──────────────────────────────────────────────────────────────────
+document.getElementById('languageSelect').addEventListener('change', event => {
+  I18N.setLanguage(event.target.value);
+});
+
+document.addEventListener('languagechange', () => {
+  populateTrendDropdown();
+  renderDishes();
+  renderCharacters();
+  updateRosterSummary();
+  if (lastView?.type === 'results') showResults(lastView.data);
+  if (lastView?.type === 'error') showError(lastView.key, lastView.variables);
+});
+
 init();

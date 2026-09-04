@@ -9,6 +9,7 @@ A web-based optimizer for Cafe by Origen. Finds the best dish menu and character
 - Trend bonuses applied automatically
 - Manage dishes, characters, ingredients via UI
 - Data persists in browser (localStorage)
+- English and Simplified Chinese interface
 - Default data loaded from `data.json` on first visit
 
 ## Skill Format
