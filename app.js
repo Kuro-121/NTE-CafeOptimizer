@@ -374,7 +374,7 @@ function runOptimizer() {
     return;
   }
 
-  const dishCombos = getCombinations(ownedDishes, maxDishes);
+  const dishCombos = getBestMenusByType(ownedDishes, maxDishes);
   const charCombos = ownedChars.length > 0
     ? getCombinations(ownedChars, Math.min(ownedChars.length, maxChars))
     : [[]];
@@ -486,6 +486,36 @@ function getCombinations(array, size) {
     for (let i = start; i < array.length; i++) helper(i + 1, [...combo, array[i]]);
   }
   helper(0, []);
+  return result;
+}
+
+// Skills only depend on dish-type counts. For each possible count distribution,
+// the most valuable menu is therefore the top-priced dishes from each type.
+function getBestMenusByType(dishes, size) {
+  const groups = [...new Set(dishes.map(d => d.type))].map(type => ({
+    dishes: dishes.filter(d => d.type === type).sort((a, b) => b.basePrice - a.basePrice)
+  }));
+  const result = [];
+
+  function build(groupIndex, remaining, menu) {
+    if (groupIndex === groups.length) {
+      if (remaining === 0) result.push(menu);
+      return;
+    }
+
+    const group = groups[groupIndex].dishes;
+    const laterCapacity = groups
+      .slice(groupIndex + 1)
+      .reduce((sum, item) => sum + item.dishes.length, 0);
+    const minCount = Math.max(0, remaining - laterCapacity);
+    const maxCount = Math.min(group.length, remaining);
+
+    for (let count = minCount; count <= maxCount; count++) {
+      build(groupIndex + 1, remaining - count, [...menu, ...group.slice(0, count)]);
+    }
+  }
+
+  build(0, size, []);
   return result;
 }
 
