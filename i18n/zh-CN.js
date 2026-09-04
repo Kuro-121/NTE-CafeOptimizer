@@ -1,7 +1,7 @@
 globalThis.I18N_MESSAGES = globalThis.I18N_MESSAGES || {};
 
 globalThis.I18N_MESSAGES['zh-CN'] = {
-  'app.title': '起源咖啡馆 — 阵容优化器',
+  'app.title': 'Origen的异环咖啡馆阵容优化器',
   'app.subtitle': '阵容优化器',
   'nav.optimizer': '优化器',
   'nav.dishes': '菜品',
