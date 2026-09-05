@@ -11,7 +11,7 @@ globalThis.I18N_MESSAGES['zh-CN'] = {
   'settings.cafesHint': '决定菜品与角色的最大上阵数',
   'settings.trend': '潮流',
   'settings.none': '— 无 —',
-  'settings.trendBonus': '潮流加成（+ Fons）',
+  'settings.trendBonus': '潮流加成（+方斯）',
   'settings.popularityBonus': '人气加成',
   'settings.hotoriCatDecor': '专属客服摆件',
   'settings.run': '开始优化',
@@ -45,7 +45,7 @@ globalThis.I18N_MESSAGES['zh-CN'] = {
   'error.noOwnedDishes': '没有已拥有的菜品。请前往“菜品”页勾选已有菜品。',
   'error.notEnoughDishes': '{cafes} 家咖啡馆至少需要 {needed} 个已有菜品，目前只有 {owned} 个。',
   'error.noRoster': '找不到有效阵容。',
-  'results.trend': '潮流：{category}（+{bonus} Fons）',
+  'results.trend': '潮流：{category}（+{bonus}方斯',
   'results.traffic': '客流量',
   'results.priceBuff': '价格加成',
   'results.priceMultiplier': '价格倍率',
@@ -56,7 +56,7 @@ globalThis.I18N_MESSAGES['zh-CN'] = {
   'buff.traffic': '+{value} 客流量',
   'buff.price': '+{value} 价格',
   'buff.pricePercent': '+{value}% 价格',
-  'unit.fonsPerHour': 'Fons/小时',
+  'unit.fonsPerHour': '方斯/小时',
   'unit.perHour': '/小时',
   'common.and': '、'
 };
