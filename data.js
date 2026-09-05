@@ -151,6 +151,14 @@ const MASTER_DATA = {
         { "level": 3, "val": 18, "req": 0, "type": "Traffic_Flat", "tag": "None" },
         { "level": 5, "val": 27, "req": 0, "type": "Traffic_Flat", "tag": "None" }
       ]
+    },
+    {
+      "name": "Linko",
+      "skills": [
+        { "level": 1, "val": 18, "req": 0, "type": "Traffic_Flat", "tag": "None" },
+        { "level": 3, "val": 18, "req": 0, "type": "Traffic_Flat", "tag": "None" },
+        { "level": 5, "val": 27, "req": 0, "type": "Traffic_Flat", "tag": "None" }
+      ]
     }
   ]
 }
