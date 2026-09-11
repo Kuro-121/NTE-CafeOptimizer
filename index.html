@@ -16,14 +16,20 @@
         <span class="logo-icon">☕</span>
         <div>
           <div class="logo-title">Cafe by Origen</div>
-          <div class="logo-sub">Roster Optimizer</div>
+          <div class="logo-sub" data-i18n="app.subtitle">Roster Optimizer</div>
         </div>
       </div>
-      <nav class="tabs">
-        <button class="tab active" data-tab="optimizer">Optimizer</button>
-        <button class="tab" data-tab="dishes">Dishes</button>
-        <button class="tab" data-tab="characters">Characters</button>
-      </nav>
+      <div class="header-actions">
+        <nav class="tabs">
+          <button class="tab active" data-tab="optimizer" data-i18n="nav.optimizer">Optimizer</button>
+          <button class="tab" data-tab="dishes" data-i18n="nav.dishes">Dishes</button>
+          <button class="tab" data-tab="characters" data-i18n="nav.characters">Characters</button>
+        </nav>
+        <select id="languageSelect" class="language-select" aria-label="Language">
+          <option value="en">English</option>
+          <option value="zh-CN">中文</option>
+        </select>
+      </div>
     </div>
   </header>
 
@@ -34,48 +40,48 @@
       <div class="optimizer-grid">
 
         <div class="panel settings-panel">
-          <h2 class="panel-title">Settings</h2>
+          <h2 class="panel-title" data-i18n="settings.title">Settings</h2>
 
           <div class="field-group">
-            <label>Cafes Owned</label>
+            <label data-i18n="settings.cafesOwned">Cafes Owned</label>
             <input type="number" id="cafesOwned" min="1" max="10" value="5" />
-            <span class="field-hint">Sets max dishes &amp; characters</span>
+            <span class="field-hint" data-i18n="settings.cafesHint">Sets max dishes &amp; characters</span>
           </div>
 
           <div class="field-group">
-            <label>Trend</label>
+            <label data-i18n="settings.trend">Trend</label>
             <select id="trendCategory">
-              <option value="">— None —</option>
+              <option value="" data-i18n="settings.none">— None —</option>
             </select>
           </div>
 
           <div class="field-group">
-            <label>Trend Bonus (+Fons)</label>
+            <label data-i18n="settings.trendBonus">Trend Bonus (+Fons)</label>
             <input type="number" id="trendBonus" step="0.01" value="1.00" />
           </div>
 
           <div class="field-group">
-            <label>Popularity Bonus</label>
+            <label data-i18n="settings.popularityBonus">Popularity Bonus</label>
             <input type="number" id="popularityBonus" step="0.01" value="0" />
           </div>
 
           <div class="setting-row">
-            <label for="hotoriCatDecor">Hotori Cat Decor</label>
+            <label for="hotoriCatDecor" data-i18n="settings.hotoriCatDecor">Hotori Cat Decor</label>
             <input type="checkbox" id="hotoriCatDecor">
           </div>
 
           <button class="btn-run" id="btnRun">
-            <span class="btn-icon">⚡</span> Run Optimizer
+            <span class="btn-icon">⚡</span> <span data-i18n="settings.run">Run Optimizer</span>
           </button>
 
           <div class="roster-summary" id="rosterSummary"></div>
         </div>
 
         <div class="panel results-panel">
-          <h2 class="panel-title">Results</h2>
+          <h2 class="panel-title" data-i18n="results.title">Results</h2>
           <div id="resultsArea" class="results-placeholder">
             <div class="placeholder-icon">☕</div>
-            <p>Configure your settings and run the optimizer to see the best roster.</p>
+            <p data-i18n="results.placeholder">Configure your settings and run the optimizer to see the best roster.</p>
           </div>
         </div>
 
@@ -86,7 +92,7 @@
     <section id="tab-dishes" class="tab-content">
       <div class="panel full-panel">
         <div class="panel-header">
-          <h2 class="panel-title">Dishes</h2>
+          <h2 class="panel-title" data-i18n="dishes.title">Dishes</h2>
           <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
             <button class="btn-bulk" id="btnToggleAllOwned">Own All</button>
             <button class="btn-bulk" id="btnToggleAllLevel">Set All L2</button>
@@ -96,13 +102,13 @@
           <table id="dishTable">
             <thead>
               <tr>
-                <th>Owned</th>
-                <th>Level</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Ingredients</th>
-                <th>Price L1</th>
-                <th>Price L2</th>
+                <th data-i18n="table.owned">Owned</th>
+                <th data-i18n="table.level">Level</th>
+                <th data-i18n="table.name">Name</th>
+                <th data-i18n="table.type">Type</th>
+                <th data-i18n="table.ingredients">Ingredients</th>
+                <th data-i18n="table.priceL1">Price L1</th>
+                <th data-i18n="table.priceL2">Price L2</th>
               </tr>
             </thead>
             <tbody id="dishTableBody"></tbody>
@@ -115,7 +121,7 @@
     <section id="tab-characters" class="tab-content">
       <div class="panel full-panel">
         <div class="panel-header">
-          <h2 class="panel-title">Characters</h2>
+          <h2 class="panel-title" data-i18n="characters.title">Characters</h2>
         </div>
         <div id="charCards" class="char-cards"></div>
       </div>
@@ -124,6 +130,9 @@
   </main>
   
   <script src="data.js"></script>
+  <script src="i18n/en.js"></script>
+  <script src="i18n/zh-CN.js"></script>
+  <script src="i18n/index.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
