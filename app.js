@@ -1,12 +1,12 @@
 // ── STORAGE KEYS ───────────────────────────────────────────────────────────
-const DATA_KEY     = 'cafe_origen_data_v2';   // { dishes: {}, characters: {} } — keyed by name
+const DATA_KEY     = 'cafe_origen_data_v2';   // { dishes: {}, characters: {}, customCharacters: [] } — keyed by name
 const SETTINGS_KEY = 'cafe_origen_settings';
 
 // Master data from data.json (never mutated, never stored)
 let masterData = { ingredients: [], dishes: [], characters: [] };
 
-// User state: { dishes: { [name]: { owned, level } }, characters: { [name]: { owned, level } } }
-let userState = { dishes: {}, characters: {} };
+// User state: { dishes: { [name]: { owned, level } }, characters: { [name]: { owned, level } }, customCharacters: [{name, skills}] }
+let userState = { dishes: {}, characters: {}, customCharacters: [] };
 
 let settings = { cafesOwned: 5, trendCategory: '', trendBonus: 1.0, popularityBonus: 0, hotoriCatDecor: false};
 let lastView = null;
@@ -17,12 +17,66 @@ function init() {
   I18N.apply();
   loadSettings();
   loadUserState();
+  reconcileCustomCharacters();
   seedUserState();
   populateTrendDropdown();
   renderDishes();
   renderCharacters();
+  initCustomCharacterForm();
   updateRosterSummary();
   applySettings();
+}
+
+// Combined list of built-in + user-created characters.
+function getAllCharacters() {
+  return [...masterData.characters, ...userState.customCharacters];
+}
+function isCustomCharacterName(name) {
+  return userState.customCharacters.some(c => c.name === name);
+}
+
+// If a game-data update introduces an official character whose name matches
+// an existing custom character, names would collide as a shared state key
+// (userState.characters is keyed by name) and the custom card would render
+// using the master character's identity. Detect that here and rename the
+// custom character to a unique name, migrating its saved owned/level state
+// so the user doesn't lose it and the new official character gets a clean
+// default entry.
+function reconcileCustomCharacters() {
+  const masterNames = new Set(masterData.characters.map(c => c.name));
+  const renamed = [];
+
+  userState.customCharacters.forEach(c => {
+    if (!masterNames.has(c.name)) return;
+
+    const oldName = c.name;
+    const taken = new Set([
+      ...masterData.characters.map(x => x.name),
+      ...userState.customCharacters.map(x => x.name),
+    ]);
+    let newName = `${oldName} (Custom)`;
+    let n = 2;
+    while (taken.has(newName)) { newName = `${oldName} (Custom ${n})`; n++; }
+
+    // Migrate saved owned/level state to the new unique key, and clear the
+    // old key so the official character gets a fresh default entry instead
+    // of inheriting the custom character's owned/level state.
+    if (userState.characters[oldName]) {
+      userState.characters[newName] = { ...userState.characters[oldName] };
+      delete userState.characters[oldName];
+    }
+
+    c.name = newName;
+    renamed.push({ oldName, newName });
+  });
+
+  if (renamed.length) {
+    saveUserState();
+    alert(
+      I18N.t('characters.renameNotice') + '\n' +
+      renamed.map(r => `"${r.oldName}" → "${r.newName}"`).join('\n')
+    );
+  }
 }
 
 // Fills in default entries for any dish/character not yet in userState.
@@ -32,6 +86,9 @@ function seedUserState() {
     if (!userState.dishes[d.name]) userState.dishes[d.name] = { owned: false, level: 1 };
   });
   masterData.characters.forEach(c => {
+    if (!userState.characters[c.name]) userState.characters[c.name] = { owned: false, level: 1 };
+  });
+  userState.customCharacters.forEach(c => {
     if (!userState.characters[c.name]) userState.characters[c.name] = { owned: false, level: 1 };
   });
   saveUserState();
@@ -50,6 +107,7 @@ function loadUserState() {
       }
       userState.dishes     = (parsed.dishes     && typeof parsed.dishes === 'object')     ? parsed.dishes     : {};
       userState.characters = (parsed.characters && typeof parsed.characters === 'object') ? parsed.characters : {};
+      userState.customCharacters = Array.isArray(parsed.customCharacters) ? parsed.customCharacters : [];
     }
   } catch (e) {
     console.warn('Could not load user state:', e);
@@ -205,10 +263,12 @@ function renderCharacters() {
   const container = document.getElementById('charCards');
   container.innerHTML = '';
 
-  masterData.characters.forEach(c => {
+  getAllCharacters().forEach(c => {
     if (!userState.characters[c.name]) userState.characters[c.name] = { owned: false, level: 1 };
     const us = userState.characters[c.name];
     const isOwned = us.owned;
+    const isCustom = isCustomCharacterName(c.name);
+    const displayName = isCustom ? c.name : I18N.data('characters', c.name);
 
     const card = document.createElement('div');
     card.className = `char-card${isOwned ? ' owned' : ''}`;
@@ -219,7 +279,7 @@ function renderCharacters() {
         <span class="skill-lvl">L${s.level}</span>
         <span class="skill-val">${s.val > 0 && s.type.includes('Traffic') ? '+'+s.val : s.val > 0 && s.val < 1 ? '+'+s.val.toFixed(3) : s.val}</span>
         <span class="skill-type">${I18N.data('skillTypes', s.type)}</span>
-        ${s.tag !== 'None' ? `<span class="skill-tag">/ ${I18N.data(s.tag === 'Any' ? 'skillTags' : 'dishTypes', s.tag)}</span>` : ''}
+        ${s.tag !== 'None' ? `<span class="skill-tag">/ ${isCustom ? s.tag : I18N.data(s.tag === 'Any' ? 'skillTags' : 'dishTypes', s.tag)}</span>` : ''}
         ${s.req > 0 ? `<span class="skill-req">${I18N.t('characters.requirement', { count: s.req })}</span>` : ''}
       </div>
     `).join('');
@@ -227,7 +287,7 @@ function renderCharacters() {
     card.innerHTML = `
       <div class="char-card-header">
         <div class="char-card-left">
-          <span class="char-name">${I18N.data('characters', c.name)}</span>
+          <span class="char-name">${displayName}${isCustom ? ` <span class="skill-req">${I18N.t('characters.customLabel')}</span>` : ''}</span>
           <span class="char-owned-badge ${isOwned ? 'owned' : 'unowned'}">${I18N.t(isOwned ? 'characters.owned' : 'characters.notOwned')}</span>
         </div>
         <span class="char-chevron">▼</span>
@@ -242,6 +302,7 @@ function renderCharacters() {
             <label>${I18N.t('characters.level')}</label>
             <input type="number" min="1" max="5" value="${us.level || 1}" data-char-lvl="${c.name}" />
           </div>
+          ${isCustom ? `<button type="button" class="btn-bulk" data-delete-char="${c.name}">🗑 ${I18N.t('characters.delete')}</button>` : ''}
         </div>
         <div class="skills-section">
           <div class="skills-title">${I18N.t('characters.skills')}</div>
@@ -289,6 +350,121 @@ function renderCharacters() {
       saveUserState();
     });
   });
+
+  // Delete custom character
+  container.querySelectorAll('[data-delete-char]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteCustomCharacter(btn.dataset.deleteChar);
+    });
+  });
+}
+
+// ── CUSTOM CHARACTERS ───────────────────────────────────────────────────────
+function initCustomCharacterForm() {
+  const toggleBtn = document.getElementById('btnToggleAddCharForm');
+  const form = document.getElementById('addCharForm');
+
+  toggleBtn.addEventListener('click', () => {
+    const showing = form.style.display !== 'none';
+    form.style.display = showing ? 'none' : 'block';
+    if (!showing && document.getElementById('newCharSkills').children.length === 0) {
+      addSkillRow();
+    }
+  });
+
+  document.getElementById('btnAddSkillRow').addEventListener('click', addSkillRow);
+  document.getElementById('btnSaveCustomChar').addEventListener('click', saveCustomCharacter);
+}
+
+function dishTypeOptions() {
+  const types = [...new Set(masterData.dishes.map(d => d.type))];
+  return types.map(t => `<option value="${t}">${I18N.data('dishTypes', t)}</option>`).join('');
+}
+
+function addSkillRow() {
+  const container = document.getElementById('newCharSkills');
+  const row = document.createElement('div');
+  row.className = 'skill-row';
+  row.innerHTML = `
+    <div class="skill-field">
+      <label>${I18N.t('skillForm.type')}</label>
+      <select data-skill-type>
+        <option value="Price_Flat">${I18N.data('skillTypes', 'Price_Flat')}</option>
+        <option value="Traffic_Flat">${I18N.data('skillTypes', 'Traffic_Flat')}</option>
+        <option value="Price_Multiply">${I18N.data('skillTypes', 'Price_Multiply')}</option>
+        <option value="Traffic_Multiply">${I18N.data('skillTypes', 'Traffic_Multiply')}</option>
+      </select>
+    </div>
+    <div class="skill-field">
+      <label>${I18N.t('skillForm.level')}</label>
+      <input type="number" data-skill-level value="1" min="1" max="5" />
+    </div>
+    <div class="skill-field">
+      <label>${I18N.t('skillForm.value')}</label>
+      <input type="number" data-skill-val value="0" step="0.01" />
+    </div>
+    <div class="skill-field">
+      <label>${I18N.t('skillForm.tag')}</label>
+      <select data-skill-tag>
+        <option value="None">${I18N.t('skillForm.tagNone')}</option>
+        <option value="Any">${I18N.t('skillForm.tagAny')}</option>
+        ${dishTypeOptions()}
+      </select>
+    </div>
+    <div class="skill-field">
+      <label>${I18N.t('skillForm.requirement')}</label>
+      <input type="number" data-skill-req value="0" min="0" />
+    </div>
+    <button type="button" class="btn-bulk skill-remove-btn" data-remove-skill
+      title="${I18N.t('skillForm.removeSkill')}" aria-label="${I18N.t('skillForm.removeSkill')}">✕</button>
+  `;
+  row.querySelector('[data-remove-skill]').addEventListener('click', () => row.remove());
+  container.appendChild(row);
+}
+
+function saveCustomCharacter() {
+  const nameInput = document.getElementById('newCharName');
+  const name = nameInput.value.trim();
+  if (!name) { alert(I18N.t('characters.errorNoName')); return; }
+  if (getAllCharacters().some(c => c.name.toLowerCase() === name.toLowerCase())) {
+    alert(I18N.t('characters.errorDuplicateName'));
+    return;
+  }
+
+  const rows = document.querySelectorAll('#newCharSkills .skill-row');
+  const skills = [];
+  rows.forEach(row => {
+    skills.push({
+      type:  row.querySelector('[data-skill-type]').value,
+      level: parseInt(row.querySelector('[data-skill-level]').value) || 1,
+      val:   parseFloat(row.querySelector('[data-skill-val]').value) || 0,
+      tag:   row.querySelector('[data-skill-tag]').value,
+      req:   parseInt(row.querySelector('[data-skill-req]').value) || 0,
+    });
+  });
+  if (skills.length === 0) { alert(I18N.t('characters.errorNoSkills')); return; }
+
+  userState.customCharacters.push({ name, skills });
+  userState.characters[name] = { owned: true, level: 1 };
+  saveUserState();
+
+  // Reset form
+  nameInput.value = '';
+  document.getElementById('newCharSkills').innerHTML = '';
+  document.getElementById('addCharForm').style.display = 'none';
+
+  renderCharacters();
+  updateRosterSummary();
+}
+
+function deleteCustomCharacter(name) {
+  if (!confirm(I18N.t('characters.deleteConfirm', { name }))) return;
+  userState.customCharacters = userState.customCharacters.filter(c => c.name !== name);
+  delete userState.characters[name];
+  saveUserState();
+  renderCharacters();
+  updateRosterSummary();
 }
 
 // ── ROSTER SUMMARY ─────────────────────────────────────────────────────────
@@ -296,7 +472,7 @@ function updateRosterSummary() {
   const cafes = parseInt(document.getElementById('cafesOwned').value) || 1;
   const maxD = cafes, maxC = cafes * 2;
   const ownedDishes = masterData.dishes.filter(d => (userState.dishes[d.name] || {}).owned).length;
-  const ownedChars  = masterData.characters.filter(c => (userState.characters[c.name] || {}).owned).length;
+  const ownedChars  = getAllCharacters().filter(c => (userState.characters[c.name] || {}).owned).length;
 
   document.getElementById('rosterSummary').innerHTML = `
     ${I18N.t('summary.dishes', { owned: ownedDishes, slots: maxD })}<br>
@@ -355,9 +531,9 @@ function runOptimizer() {
     ownedDishes.push({ name: d.name, type: d.type, basePrice: base + (isTrending ? trendBonus : 0), isTrending });
   });
 
-  // Build owned character pool from master data + user state
+  // Build owned character pool from master data + custom + user state
   const ownedChars = [];
-  masterData.characters.forEach(c => {
+  getAllCharacters().forEach(c => {
     const us = userState.characters[c.name] || {};
     if (!us.owned) return;
     const charLvl = us.level || 1;
@@ -590,11 +766,17 @@ function showResults(data) {
   const logHtml = data.log.length > 0 ? `
     <div class="result-section-title" style="margin-top:1rem">👥 ${I18N.t('results.characterBuffs')}</div>
     <div class="result-log">
-      ${data.log.map(e => `
+      ${data.log.map(e => {
+        let nameLabel;
+        if (e.name === 'Hotori Cat Decor') nameLabel = I18N.data('decorations', e.name);
+        else if (isCustomCharacterName(e.name)) nameLabel = e.name;
+        else nameLabel = I18N.data('characters', e.name);
+        return `
         <div class="log-entry">
-          <span class="log-name">${I18N.data(e.name === 'Hotori Cat Decor' ? 'decorations' : 'characters', e.name)}</span>
+          <span class="log-name">${nameLabel}</span>
           <span class="log-buffs">${e.buffs.map(buff => I18N.t(buff.key, { value: buff.value })).join(I18N.t('common.and'))}</span>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
     </div>` : '';
 
   document.getElementById('resultsArea').innerHTML = `

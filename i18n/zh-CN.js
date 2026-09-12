@@ -58,7 +58,27 @@ globalThis.I18N_MESSAGES['zh-CN'] = {
   'buff.pricePercent': '+{value}% 价格',
   'unit.fonsPerHour': '方斯/小时',
   'unit.perHour': '/小时',
-  'common.and': '、'
+  'common.and': '、',
+  'characters.addNew': '+ 新角色',
+  'characters.customLabel': '(风俗)',
+  'characters.name': '角色名称',
+  'characters.namePlaceholder': 'e.g. Kuro',
+  'characters.addSkill': '+ 加技能',
+  'characters.saveCharacter': '加角色',
+  'characters.delete': '删除',
+  'characters.deleteConfirm': '删除 "{name}"?',
+  'characters.errorNoName': '请输入角色名称。',
+  'characters.errorDuplicateName': '已存在同名角色。',
+  'characters.errorNoSkills': '至少添加一项技能。',
+  'characters.renameNotice': '请注意——游戏数据中现已包含与您的某些自建角色同名的官方角色。为避免冲突，您的自建角色已被重命名。',
+  'skillForm.type': '加成类型',
+  'skillForm.level': '等级',
+  'skillForm.value': '数值',
+  'skillForm.tag': '适用于',
+  'skillForm.requirement': '需',
+  'skillForm.removeSkill': '移除技能',
+  'skillForm.tagNone': '无',
+  'skillForm.tagAny': '任意'
 };
 
 globalThis.I18N_DATA_NAMES = {

@@ -268,6 +268,37 @@ td.type-col { color: var(--accent); }
 .btn-bulk:hover { border-color: var(--accent); color: var(--accent); }
 .btn-bulk.active { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,0.08); }
 
+/* ── CUSTOM CHARACTER FORM ── */
+.add-char-form {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem;
+}
+.skill-row {
+  display: flex; align-items: flex-end; gap: 0.6rem;
+  margin-bottom: 0.75rem; padding-bottom: 0.75rem; flex-wrap: wrap;
+  border-bottom: 1px dashed var(--border);
+}
+.skill-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.skill-field {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  flex: 1 1 110px; min-width: 90px;
+}
+.skill-field label {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text3); white-space: nowrap;
+}
+.skill-field select,
+.skill-field input { width: 100%; }
+
+.skill-remove-btn {
+  flex: 0 0 auto; color: var(--red); border-color: var(--red);
+  padding: 0.5rem 0.6rem;
+}
+.skill-remove-btn:hover {
+  background: rgba(248,113,113,0.1); border-color: var(--red); color: var(--red);
+}
+
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }

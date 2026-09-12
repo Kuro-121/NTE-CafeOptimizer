@@ -122,7 +122,28 @@
       <div class="panel full-panel">
         <div class="panel-header">
           <h2 class="panel-title" data-i18n="characters.title">Characters</h2>
+          <button class="btn-bulk" id="btnToggleAddCharForm" data-i18n="characters.addNew">+ New Character</button>
         </div>
+
+        <!-- Custom character creation form (hidden by default) -->
+        <div id="addCharForm" class="add-char-form" style="display:none">
+          <div class="field-group">
+            <label data-i18n="characters.name">Character Name</label>
+            <input type="text" id="newCharName" placeholder="e.g. Kuro" data-i18n-placeholder="characters.namePlaceholder" />
+          </div>
+
+          <div class="skills-title" style="margin-top:0.5rem" data-i18n="characters.skills">Skills</div>
+          <div id="newCharSkills"></div>
+
+          <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap">
+            <button type="button" class="btn-bulk" id="btnAddSkillRow" data-i18n="characters.addSkill">+ Add Skill</button>
+          </div>
+
+          <button type="button" class="btn-run" id="btnSaveCustomChar" style="margin-top:0.75rem" data-i18n="characters.saveCharacter">
+            Save Character
+          </button>
+        </div>
+
         <div id="charCards" class="char-cards"></div>
       </div>
     </section>
