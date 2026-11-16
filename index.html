@@ -122,7 +122,11 @@
       <div class="panel full-panel">
         <div class="panel-header">
           <h2 class="panel-title" data-i18n="characters.title">Characters</h2>
-          <button class="btn-bulk" id="btnToggleAddCharForm" data-i18n="characters.addNew">+ New Character</button>
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+            <button class="btn-bulk" id="btnToggleAllCharsOwned">Own All</button>
+            <button class="btn-bulk" id="btnToggleAllCharsLevel">Set All L5</button>
+            <button class="btn-bulk" id="btnToggleAddCharForm" data-i18n="characters.addNew">+ New Character</button>
+          </div>
         </div>
 
         <!-- Custom character creation form (hidden by default) -->

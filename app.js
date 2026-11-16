@@ -261,6 +261,9 @@ function renderDishes() {
 // ── CHARACTERS ─────────────────────────────────────────────────────────────
 function renderCharacters() {
   const container = document.getElementById('charCards');
+  // Remember which cards were expanded so a re-render (e.g. bulk toggle) keeps them open.
+  const openNames = new Set([...container.querySelectorAll('.char-card.open [data-char-owned]')]
+    .map(el => el.dataset.charOwned));
   container.innerHTML = '';
 
   getAllCharacters().forEach(c => {
@@ -271,7 +274,7 @@ function renderCharacters() {
     const displayName = isCustom ? c.name : I18N.data('characters', c.name);
 
     const card = document.createElement('div');
-    card.className = `char-card${isOwned ? ' owned' : ''}`;
+    card.className = `char-card${isOwned ? ' owned' : ''}${openNames.has(c.name) ? ' open' : ''}`;
 
     // Build skills preview (read-only)
     const skillsHtml = (c.skills || []).map(s => `
@@ -337,7 +340,7 @@ function renderCharacters() {
         badge.className = 'char-owned-badge unowned';
         badge.textContent = I18N.t('characters.notOwned');
       }
-      saveUserState(); updateRosterSummary();
+      saveUserState(); updateRosterSummary(); updateCharacterBulkButtons();
     });
   });
 
@@ -347,7 +350,7 @@ function renderCharacters() {
       const name = inp.dataset.charLvl;
       userState.characters[name].level = Math.max(1, Math.min(5, parseInt(inp.value) || 1));
       inp.value = userState.characters[name].level;
-      saveUserState();
+      saveUserState(); updateCharacterBulkButtons();
     });
   });
 
@@ -358,6 +361,38 @@ function renderCharacters() {
       deleteCustomCharacter(btn.dataset.deleteChar);
     });
   });
+
+  updateCharacterBulkButtons();
+}
+
+// ── Bulk toggles: Own All / Unown All, Set All L5 / Set All L1
+// Applies to every character, including custom ones.
+const CHAR_MAX_LEVEL = 5;
+function updateCharacterBulkButtons() {
+  const chars = getAllCharacters();
+  const allOwned = chars.length > 0 && chars.every(c => userState.characters[c.name]?.owned);
+  const btnOwned = document.getElementById('btnToggleAllCharsOwned');
+  btnOwned.textContent = I18N.t(allOwned ? 'characters.unownAll' : 'characters.ownAll');
+  btnOwned.classList.toggle('active', allOwned);
+  btnOwned.onclick = () => {
+    chars.forEach(c => {
+      if (!userState.characters[c.name]) userState.characters[c.name] = { owned: false, level: 1 };
+      userState.characters[c.name].owned = !allOwned;
+    });
+    saveUserState(); updateRosterSummary(); renderCharacters();
+  };
+
+  const allMax = chars.length > 0 && chars.every(c => userState.characters[c.name]?.level === CHAR_MAX_LEVEL);
+  const btnLevel = document.getElementById('btnToggleAllCharsLevel');
+  btnLevel.textContent = I18N.t(allMax ? 'characters.setAllL1' : 'characters.setAllL5');
+  btnLevel.classList.toggle('active', allMax);
+  btnLevel.onclick = () => {
+    chars.forEach(c => {
+      if (!userState.characters[c.name]) userState.characters[c.name] = { owned: false, level: 1 };
+      userState.characters[c.name].level = allMax ? 1 : CHAR_MAX_LEVEL;
+    });
+    saveUserState(); renderCharacters();
+  };
 }
 
 // ── CUSTOM CHARACTERS ───────────────────────────────────────────────────────
