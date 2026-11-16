@@ -528,7 +528,13 @@ function runOptimizer() {
     for (const sub of trendingSubItems) { if (ingredients.includes(sub)) { subMatch = true; break; } }
     const ingMatch = trendMatch && (ingredients.includes(trendMatch) || subMatch);
     const isTrending = typeMatch || ingMatch;
-    ownedDishes.push({ name: d.name, type: d.type, basePrice: base + (isTrending ? trendBonus : 0), isTrending });
+    // How the game applies the trend bonus depends on the kind of trend (verified in-game):
+    // - dish-type trend (e.g. Main Dishes): raises the base price, so Price_Multiply scales it;
+    // - ingredient trend (e.g. Coffee Beans): flat add after the price multiplier (upstream issue #4).
+    // basePrice therefore includes a dish-type bonus; trendBonus holds only the post-multiplier add.
+    const typeBonus = typeMatch ? trendBonus : 0;
+    const ingBonus  = !typeMatch && ingMatch ? trendBonus : 0;
+    ownedDishes.push({ name: d.name, type: d.type, basePrice: base + typeBonus, trendBonus: ingBonus, isTrending });
   });
 
   // Build owned character pool from master data + custom + user state
@@ -638,7 +644,7 @@ function runOptimizer() {
 
       const trafficRatio = currentTraffic / 100;
       const totalIncome = testMenu.reduce((sum, d) =>
-        sum + (d.basePrice + currentPriceBuff) * currentPriceMultiplier * trafficRatio, 0);
+        sum + ((d.basePrice + currentPriceBuff) * currentPriceMultiplier + d.trendBonus) * trafficRatio, 0);
 
       if (totalIncome > bestScore) {
         bestScore = totalIncome;
@@ -669,7 +675,8 @@ function getCombinations(array, size) {
 // the most valuable menu is therefore the top-priced dishes from each type.
 function getBestMenusByType(dishes, size) {
   const groups = [...new Set(dishes.map(d => d.type))].map(type => ({
-    dishes: dishes.filter(d => d.type === type).sort((a, b) => b.basePrice - a.basePrice)
+    dishes: dishes.filter(d => d.type === type)
+      .sort((a, b) => (b.basePrice + b.trendBonus) - (a.basePrice + a.trendBonus))
   }));
   const result = [];
 
@@ -747,7 +754,7 @@ function showResults(data) {
     <div class="result-section-title">🍽️ ${I18N.t('results.bestMenu')}</div>
     <div class="result-menu">
       ${data.dishes.map(d => {
-        const finalPrice = (d.basePrice + data.priceBuff) * data.priceMultiplier;
+        const finalPrice = (d.basePrice + data.priceBuff) * data.priceMultiplier + d.trendBonus;
         return `
           <div class="result-dish">
             <div class="result-dish-name">
