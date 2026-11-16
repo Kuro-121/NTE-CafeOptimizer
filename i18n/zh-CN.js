@@ -152,7 +152,8 @@ globalThis.I18N_DATA_NAMES = {
     'Lacrimosa': '安魂曲',
     'Shinku': '真红',
     'Iroi': '伊洛伊',
-    'Linko': '灵可'
+    'Linko': '灵可',
+    'Akane Rin': '明音凛'
   },
   skillTypes: {
     'Price_Flat': '固定价格加成',
