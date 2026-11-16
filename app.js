@@ -521,6 +521,23 @@ function updateRosterSummary() {
   document.getElementById(id).addEventListener('change', () => { saveSettings(); updateRosterSummary(); });
 });
 
+// Default Trend Bonus for known trends. Picking one of these fills in the bonus;
+// other trends keep whatever bonus is currently entered, and the user can still edit it.
+const TREND_BONUS_DEFAULTS = {
+  'Flour': 0.75,
+  'Fruit': 0.75,
+  'Coffee Beans': 0.75,
+  'Beverages': 1.0,
+  'Main Dishes': 1.0,
+  'Desserts': 1.0,
+};
+document.getElementById('trendCategory').addEventListener('change', e => {
+  const bonus = TREND_BONUS_DEFAULTS[e.target.value];
+  if (bonus === undefined) return;
+  document.getElementById('trendBonus').value = bonus.toFixed(2);
+  saveSettings();
+});
+
 function nCr(n, r) {
   if (r > n || r < 0) return 0;
   if (r === 0 || r === n) return 1;
