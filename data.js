@@ -50,35 +50,14 @@ const MASTER_DATA = {
   ],
   "characters": [
     {
-      "name": "Nanally",
-      "skills": [
-        { "level": 1, "val": 0.20, "req": 1, "type": "Price_Flat", "tag": "Main Dishes" },
-        { "level": 5, "val": 0.30, "req": 2, "type": "Price_Flat", "tag": "Main Dishes" }
-      ]
-    },
-    {
-      "name": "Sakiri",
+      "name": "Mint",
       "skills": [
         { "level": 1, "val": 0.12, "req": 0, "type": "Price_Flat", "tag": "None" },
-        { "level": 5, "val": 0.30, "req": 3, "type": "Price_Flat", "tag": "Any" }
+        { "level": 5, "val": 0.18, "req": 0, "type": "Price_Flat", "tag": "None" }
       ]
     },
     {
-      "name": "Skia",
-      "skills": [
-        { "level": 1, "val": 18, "req": 0, "type": "Traffic_Flat", "tag": "None" },
-        { "level": 5, "val": 27, "req": 0, "type": "Traffic_Flat", "tag": "None" }
-      ]
-    },
-    {
-      "name": "Baicang",
-      "skills": [
-        { "level": 1, "val": 18, "req": 0, "type": "Traffic_Flat", "tag": "None" },
-        { "level": 5, "val": 27, "req": 0, "type": "Traffic_Flat", "tag": "None" }
-      ]
-    },
-    {
-      "name": "Mint",
+      "name": "Adler",
       "skills": [
         { "level": 1, "val": 0.12, "req": 0, "type": "Price_Flat", "tag": "None" },
         { "level": 5, "val": 0.18, "req": 0, "type": "Price_Flat", "tag": "None" }
@@ -93,10 +72,32 @@ const MASTER_DATA = {
       ]
     },
     {
-      "name": "Adler",
+      "name": "Aurelia",
       "skills": [
         { "level": 1, "val": 0.12, "req": 0, "type": "Price_Flat", "tag": "None" },
-        { "level": 5, "val": 0.18, "req": 0, "type": "Price_Flat", "tag": "None" }
+        { "level": 2, "val": 0.01, "req": 2, "type": "Traffic_Multiply", "tag": "Beverages" },
+        { "level": 5, "val": 0.015, "req": 2, "type": "Traffic_Multiply", "tag": "Beverages" }
+      ]
+    },
+    {
+      "name": "Nanally",
+      "skills": [
+        { "level": 1, "val": 0.20, "req": 1, "type": "Price_Flat", "tag": "Main Dishes" },
+        { "level": 5, "val": 0.30, "req": 2, "type": "Price_Flat", "tag": "Main Dishes" }
+      ]
+    },
+    {
+      "name": "Chiz",
+      "skills": [
+        { "level": 1, "val": 18, "req": 0, "type": "Traffic_Flat", "tag": "None" },
+        { "level": 5, "val": 27, "req": 0, "type": "Traffic_Flat", "tag": "None" }
+      ]
+    },
+    {
+      "name": "Skia",
+      "skills": [
+        { "level": 1, "val": 18, "req": 0, "type": "Traffic_Flat", "tag": "None" },
+        { "level": 5, "val": 27, "req": 0, "type": "Traffic_Flat", "tag": "None" }
       ]
     },
     {
@@ -104,6 +105,13 @@ const MASTER_DATA = {
       "skills": [
         { "level": 1, "val": 18, "req": 0, "type": "Traffic_Flat", "tag": "None" },
         { "level": 5, "val": 27, "req": 0, "type": "Traffic_Flat", "tag": "None" }
+      ]
+    },
+    {
+      "name": "Sakiri",
+      "skills": [
+        { "level": 1, "val": 0.12, "req": 0, "type": "Price_Flat", "tag": "None" },
+        { "level": 5, "val": 0.30, "req": 3, "type": "Price_Flat", "tag": "Any" }
       ]
     },
     {
@@ -115,15 +123,7 @@ const MASTER_DATA = {
       ]
     },
     {
-      "name": "Aurelia",
-      "skills": [
-        { "level": 1, "val": 0.12, "req": 0, "type": "Price_Flat", "tag": "None" },
-        { "level": 2, "val": 0.01, "req": 2, "type": "Traffic_Multiply", "tag": "Beverages" },
-        { "level": 5, "val": 0.015, "req": 2, "type": "Traffic_Multiply", "tag": "Beverages" }
-      ]
-    },
-    {
-      "name": "Chiz",
+      "name": "Baicang",
       "skills": [
         { "level": 1, "val": 18, "req": 0, "type": "Traffic_Flat", "tag": "None" },
         { "level": 5, "val": 27, "req": 0, "type": "Traffic_Flat", "tag": "None" }

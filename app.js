@@ -802,10 +802,14 @@ function showResults(data) {
       </div>
     </div>`;
 
+  // Show the menu in game order (data.js order) rather than the optimizer's type/price grouping.
+  const dishOrder = new Map(masterData.dishes.map((d, i) => [d.name, i]));
+  const sortedDishes = [...data.dishes].sort((a, b) => dishOrder.get(a.name) - dishOrder.get(b.name));
+
   const dishesHtml = `
     <div class="result-section-title">🍽️ ${I18N.t('results.bestMenu')}</div>
     <div class="result-menu">
-      ${data.dishes.map(d => {
+      ${sortedDishes.map(d => {
         const finalPrice = (d.basePrice + data.priceBuff) * data.priceMultiplier + d.trendBonus;
         return `
           <div class="result-dish">
@@ -822,10 +826,16 @@ function showResults(data) {
       }).join('')}
     </div>`;
 
-  const logHtml = data.log.length > 0 ? `
+  // Show buffs in game order (data.js order, then custom characters), with Hotori Cat Decor last.
+  const charOrder = new Map(getAllCharacters().map((c, i) => [c.name, i]));
+  const logRank = e => e.name === 'Hotori Cat Decor' ? Infinity
+    : (charOrder.get(e.name) ?? Number.MAX_SAFE_INTEGER);
+  const sortedLog = [...data.log].sort((a, b) => logRank(a) - logRank(b));
+
+  const logHtml = sortedLog.length > 0 ? `
     <div class="result-section-title" style="margin-top:1rem">👥 ${I18N.t('results.characterBuffs')}</div>
     <div class="result-log">
-      ${data.log.map(e => {
+      ${sortedLog.map(e => {
         let nameLabel;
         if (e.name === 'Hotori Cat Decor') nameLabel = I18N.data('decorations', e.name);
         else if (isCustomCharacterName(e.name)) nameLabel = e.name;
